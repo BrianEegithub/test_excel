@@ -1,32 +1,34 @@
 <?php
-$servername = "localhost";  // Change if needed
-$username = "root";         // Default username in XAMPP/MAMP
-$password = "";             // Default is empty in XAMPP
-$dbname = "store_data";     // Your database name
+// Database connection details
+$servername = "localhost";
+$username = "root"; // Change if you have a different username
+$password = ""; // Change if you have a password set for MySQL
+$database = "github_test"; // Your database name
 
 // Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli($servername, $username, $password, $database);
 
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Check if form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = $_POST["name"];
-    $number = $_POST["number"];
+// Get form data
+$name = $_POST['name'];
+$number = $_POST['number'];
 
-    // Insert data into MySQL
-    $sql = "INSERT INTO users (name, number) VALUES ('$name', '$number')";
+// Prepare SQL statement to prevent SQL injection
+$stmt = $conn->prepare("INSERT INTO users (name, number) VALUES (?, ?)");
+$stmt->bind_param("ss", $name, $number);
 
-    if ($conn->query($sql) === TRUE) {
-        echo "Data stored successfully!";
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
-    }
+// Execute and check if successful
+if ($stmt->execute()) {
+    echo "New record added successfully!";
+} else {
+    echo "Error: " . $stmt->error;
 }
 
-// Close connection
+// Close connections
+$stmt->close();
 $conn->close();
 ?>
